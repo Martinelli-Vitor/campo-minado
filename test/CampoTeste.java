@@ -1,9 +1,11 @@
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import br.com.coder.cm.exception.ExplosaoException;
 import br.com.coder.cm.model.Campo;
 
 public class CampoTeste {
@@ -55,6 +57,81 @@ public class CampoTeste {
 		Campo vizinho = new Campo (1,1);
 		boolean resultado = campo.adicionarVizinho(vizinho);
 		assertFalse(resultado);	
+	}
+	
+	@Test
+	public void testeValorPadraoAtributoMarcado() {
+		assertFalse(campo.isMarcado());
+	}
+	
+	@Test
+	public void testeAlternarMarcacao() {
+		campo.alternarMarcacao();
+		assertTrue(campo.isMarcado());
+	}
+	
+	@Test
+	public void testeAlternarMarcacaoDuasChamadas() {
+		campo.alternarMarcacao();
+		campo.alternarMarcacao();
+		assertFalse(campo.isMarcado());
+	}
+	
+	@Test
+	public void testeAbrirNaoMinadoNaoMarcado() {
+		assertTrue(campo.abrir());
+	}
+	
+	@Test
+	public void testeAbrirNaoMinadoMarcado() {
+		campo.alternarMarcacao();
+		assertFalse(campo.abrir());
+	}
+	
+	@Test
+	public void testeAbrirMinadoMarcado() {
+		campo.alternarMarcacao();
+		campo.minar();
+		assertFalse(campo.abrir());
+	}
+	
+	@Test
+	public void testeAbrirMinadoNaoMarcado() {
+		campo.minar();
+		assertThrows(ExplosaoException.class, ()->{
+			campo.abrir();
+		});
+	}
+	
+	@Test
+	public void testeAbrirComVizinhos() {
+		Campo campo22 = new Campo (2,2);
+		Campo campo11 = new Campo (1,1);
+		
+		campo22.adicionarVizinho(campo11);
+		
+		campo.adicionarVizinho(campo22);
+		
+		campo.abrir();
+		
+		assertTrue(campo22.isAberto() && campo11.isAberto());	
+	}
+	
+	@Test
+	public void testeAbrirComVizinhos2() {
+		Campo campo22 = new Campo (2,2);
+		Campo campo11 = new Campo (1,1);
+		Campo campo12 = new Campo(1,1);
+		campo12.minar();
+		
+		campo22.adicionarVizinho(campo11);
+		campo22.adicionarVizinho(campo12);
+		
+		campo.adicionarVizinho(campo22);
+		
+		campo.abrir();
+		
+		assertTrue(campo22.isAberto() && !campo11.isAberto());	
 	}
 
 }
