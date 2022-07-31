@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
+import br.com.coder.cm.exception.ExplosaoException;
+
 public class Tabuleiro {
 	
 	private int linhas;
@@ -26,9 +28,9 @@ public class Tabuleiro {
 		long minasArmadas =0;
 		Predicate<Campo> minado = c -> c.isMinado();
 		do {
-			minasArmadas = campos.stream().filter(minado).count();
 			int aleatorio = (int)(Math.random()*campos.size());
 			campos.get(aleatorio).minar();
+			minasArmadas = campos.stream().filter(minado).count();
 		} while(minasArmadas < minas);
 	}
 
@@ -57,10 +59,33 @@ public class Tabuleiro {
 		sortearMinas();
 	}
 	
+	public void abrir (int linha, int coluna) {
+		try{
+			campos.parallelStream().filter(c-> c.getLinha() == linha && c.getColuna() == coluna).findFirst().ifPresent(c-> c.abrir());		
+		} catch (ExplosaoException e) {
+			campos.forEach(c-> c.setAberto(true));
+			throw e;
+		}
+	}
+	
+	public void alternaMarcacao (int linha, int coluna) {
+		campos.parallelStream().filter(c-> c.getLinha() == linha && c.getColuna() == coluna).findFirst().ifPresent(c-> c.alternarMarcacao());
+	}
+	
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
+		sb.append("  ");
+		for(int i = 0; i<colunas; i++) {
+			sb.append(" ");
+			sb.append(i);
+			sb.append(" ");
+		}
+		sb.append("\n");
+		
 		int c =0;
 		for (int i=0; i<linhas; i++) {
+			sb.append(i);
+			sb.append(" ");
 			for(int j=0; j<colunas; j++) {
 				sb.append(" ");
 				sb.append(campos.get(c));
@@ -70,14 +95,6 @@ public class Tabuleiro {
 			sb.append("\n");
 		}
 		return sb.toString();
-	}
-	
-	public void abrir (int linha, int coluna) {
-		campos.parallelStream().filter(c-> c.getLinha() == linha && c.getColuna() == coluna).findFirst().ifPresent(c-> c.abrir());;
-	}
-	
-	public void alternaMarcacao (int linha, int coluna) {
-		campos.parallelStream().filter(c-> c.getLinha() == linha && c.getColuna() == coluna).findFirst().ifPresent(c-> c.alternarMarcacao());
 	}
 	
 	
